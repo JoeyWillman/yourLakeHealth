@@ -4,60 +4,49 @@
   <title>Your Lake Health</title>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="description" content="" />
+  <meta name="description" content="Explore water quality data for Wisconsin lakes." />
 
-  <!-- Calls for the ArcGIS API's CSS file and JS library -->
+  <!-- ArcGIS API -->
   <link rel="stylesheet" href="https://js.arcgis.com/4.25/esri/themes/light/main.css">
   <script src="https://js.arcgis.com/4.25/"></script>
 
   <script>
     require([
-      "esri/config",
-      "esri/Map",
-      "esri/views/MapView",
-      "esri/layers/FeatureLayer",
-      "esri/widgets/BasemapGallery",
-      "esri/widgets/Expand",
-      "esri/widgets/Locate",
-      "esri/widgets/Search",
-      "esri/widgets/Legend"
+      "esri/config", "esri/Map", "esri/views/MapView", "esri/layers/FeatureLayer",
+      "esri/widgets/BasemapGallery", "esri/widgets/Expand", "esri/widgets/Locate",
+      "esri/widgets/Search", "esri/widgets/Legend"
     ], function (esriConfig, Map, MapView, FeatureLayer, BasemapGallery, Expand, Locate, Search, Legend) {
 
-      // Set the API Key
       esriConfig.apiKey = "AAPTxy8BH1VEsoebNVZXo8HurA_2jA8sPPf_DuV7jRLl5PwtnXSU0EiBd11SD4M-Bxw0fKFGrTZCu3NOyovbJDBfzSkqhGX7Epe-UyqIiCsaaRjTZSsoKmR9S9GfDKY2gyLmWOnU_crh2vn7GmcQjYfCaI7_1l5pJln7ETdNuu-9vzQ7RgW_pV6rBHV5OcYikJqFRy0xgRwWuWQpLx2hMKRt8EHSo6a8c4SjR8zBRbLPfojgG7n9be409OOnbaATrJmUAT1_g4uWkXaW";
 
-      // Create the map
       const map = new Map({
         basemap: "arcgis-topographic"
       });
 
-      // Create the view
       const view = new MapView({
         container: "viewDiv",
         map: map,
-        center: [-89.4, 44.5], // Center of Wisconsin
+        center: [-89.4, 44.5],
         zoom: 7.5,
         constraints: {
           geometry: {
             type: "extent",
-            xmin: -92.889, // Western boundary
-            ymin: 42.491, // Southern boundary
-            xmax: -86.249, // Eastern boundary
-            ymax: 47.080, // Northern boundary
+            xmin: -92.889,
+            ymin: 42.491,
+            xmax: -86.249,
+            ymax: 47.080,
             spatialReference: { wkid: 4326 }
           },
-          minScale: 30000000, // Minimum scale (zoomed out)
-          maxScale: 50000 // Maximum scale (zoomed in)
+          minScale: 30000000,
+          maxScale: 50000
         }
       });
 
-
-      // Add the GeoJSON FeatureLayer with labeling and renderer
       const lakeLayer = new FeatureLayer({
         url: "https://dnrmaps.wi.gov/arcgis/rest/services/WT_SWDV/WT_Condition_Assessments_WTM_Ext/MapServer/8",
-        outFields: ["*"], // Load all attributes
+        outFields: ["*"],
         popupTemplate: {
-          title: "{WATERBODY_NAME}", // Lake name
+          title: "{WATERBODY_NAME}",
           content: `
             <b>Water Category:</b> {IMPAIRED_WATER_CATEGORY} <br>
             <b>Pollutant:</b> {IMPAIRED_WATER_POLLUTANT} <br>
@@ -66,44 +55,34 @@
           `
         },
         renderer: {
-          type: "simple", // SimpleRenderer
+          type: "simple",
           symbol: {
-            type: "simple-fill", // Polygon symbol
-            color: [173, 216, 230, 0.75], // Light blue with 75% transparency
+            type: "simple-fill",
+            color: [173, 216, 230, 0.75],
             outline: {
-              color: [0, 0, 255, 0.5], // Blue outline with transparency
-              width: 1 // Outline width in pixels
+              color: [0, 0, 255, 0.5],
+              width: 1
             }
           }
         },
-        labelingInfo: [
-          {
-            symbol: {
-              type: "text", // Text symbol for labeling
-              color: "blue", // Text color
-              haloColor: "white", // Halo (outline) color
-              haloSize: "1px", // Halo (outline) size
-              font: {
-                size: 12, // Font size in points
-                family: "Arial",
-                weight: "bold"
-              }
-            },
-            labelPlacement: "center-center", // Place labels at the center of the lake polygon
-            labelExpressionInfo: {
-              expression: "$feature.WATERBODY_NAME" // Display the lake name
-            },
-            minScale: 2000000 // Labels appear when zoomed closer than 1:2,000,000
-          }
-        ],
-        minScale: 5000000, // Show lakes when zoomed closer than 1:5,000,000
-        maxScale: 0        // Visible at all smaller scales (zoomed in)
+        labelingInfo: [{
+          symbol: {
+            type: "text",
+            color: "blue",
+            haloColor: "white",
+            haloSize: "1px",
+            font: { size: 12, family: "Arial", weight: "bold" }
+          },
+          labelPlacement: "center-center",
+          labelExpressionInfo: { expression: "$feature.WATERBODY_NAME" },
+          minScale: 2000000
+        }],
+        minScale: 5000000,
+        maxScale: 0
       });
 
-      // Add the layer to the map
       map.add(lakeLayer);
 
-      // Add custom title
       const titleDiv = document.createElement("div");
       titleDiv.innerHTML = "Your Lake Health";
       titleDiv.style.padding = "10px";
@@ -112,53 +91,25 @@
       titleDiv.style.fontWeight = "bold";
       titleDiv.style.color = "#2b6cb0";
       titleDiv.style.borderRadius = "5px";
+      view.ui.add(titleDiv, { position: "top-left", index: 0 });
 
-      // Add title to top-left corner
-      view.ui.add(titleDiv, {
-        position: "top-left",
-        index: 0 // Ensures it appears above the search bar
-        });
+      view.ui.add(new Search({ view: view }), "top-left");
+      view.ui.add(new Expand({ view: view, content: new BasemapGallery({ view: view }) }), "bottom-left");
+      view.ui.add(new Locate({ view: view }), "bottom-left");
+      view.ui.add(new Legend({ view: view }), "bottom-right");
 
-      // Basemap Widget
-      const basemapGallery = new BasemapGallery({ view: view });
-      const bgExpand = new Expand({
-        view: view,
-        content: basemapGallery,
-        expandIconClass: "esri-icon-basemap"
-      });
-      view.ui.add(bgExpand, {
-        position: "top-right", // Place it in the top-right corner
-        index: 0 // Ensures it takes priority over survey button
-      });
-      // Search Widget
-      const searchWidget = new Search({ view: view });
-      view.ui.add(searchWidget, {
-        position: "top-left",
-        index: 1
+      const surveyLayer = new FeatureLayer({
+        url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/survey123_fd193e714e194ed2ad179934b82645a7_form/FeatureServer"
       });
 
-      // Locate Widget
-      const locateWidget = new Locate({ view: view });
-      view.ui.add(locateWidget, "bottom-left");
+      map.add(surveyLayer);
 
-      // Legend Widget
-      const legend = new Legend({ view: view });
-      view.ui.add(legend, "bottom-right");
-
-
-      // Create featurelayer from feature service for survey
-      const layer = new FeatureLayer({ 
-      // URL to the services for survey
-      url: "https://services.arcgis.com/HRPe58bUyBqyyiCt/arcgis/rest/services/survey123_fd193e714e194ed2ad179934b82645a7_form/FeatureServer" //Your item URL Goes Here
-      });
-
-      map.add(layer);
-
-
+      document.getElementById("closeSplash").onclick = function () {
+        document.getElementById("splashScreen").style.display = "none";
+      };
     });
   </script>
 
-  <!-- CSS to make a full-screen app -->
   <style>
     html, body, #viewDiv {
       padding: 0;
@@ -167,7 +118,6 @@
       width: 100%;
     }
 
-    
     .addRecordBtn {
       position: absolute;
       z-index: 10;
@@ -185,12 +135,42 @@
 
     .addRecordBtn:hover {
       background-color: #005a87;
-}
+    }
+
+    #splashScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .splashContent {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      border-radius: 8px;
+      max-width: 500px;
+    }
   </style>
 </head>
 <body>
-  <!-- Add button-->
-  <a href="https://arcg.is/05TeSX1"target="_blank" class="addRecordBtn">Add Record</a>
+
+  <div id="splashScreen">
+    <div class="splashContent">
+      <h2>Welcome to Your Lake Health</h2>
+      <p>This tool allows you to explore water quality data for Wisconsin lakes.</p>
+      <p>Click on lakes for detailed water quality information, add a lake using the "Add Record" button, and switch basemaps using the bottom-left menu.</p>
+      <button id="closeSplash" class="closeBtn">Start Exploring</button>
+    </div>
+  </div>
+
+  <a href="https://arcg.is/05TeSX1" target="_blank" class="addRecordBtn">Add Record</a>
 
   <div id="viewDiv"></div>
 
